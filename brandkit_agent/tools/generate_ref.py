@@ -67,6 +67,9 @@ async def generate_image_with_reference(
             contents=contents,
             config=genai.types.GenerateContentConfig(
                 response_modalities=["Image"],
+                image_config=genai.types.ImageConfig(
+                    aspect_ratio=aspect_ratio,
+                ),
             ),
         )
 

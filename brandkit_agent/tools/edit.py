@@ -9,11 +9,13 @@ async def edit_image(
     tool_context: ToolContext,
     edit_prompt: str,
     image_artifact_ids: list[str] = [],
+    aspect_ratio: str = "1:1",
 ) -> dict[str, str]:
     """Edit an existing image or combine multiple images based on a text prompt.
 
     Use this to modify photos — change backgrounds, adjust lighting, add props,
-    reposition elements, or combine multiple product images into one.
+    reposition elements, combine multiple product images, or resize to a different
+    aspect ratio (e.g., horizontal banner, vertical story, square post).
 
     Args:
         edit_prompt: Detailed description of the edit. BE VERY SPECIFIC.
@@ -21,9 +23,12 @@ async def edit_image(
                      - "Change background to soft pure white with subtle gradient"
                      - "Add warm natural light from the left at 45 degrees"
                      - "Arrange these products in a horizontal line, evenly spaced"
+                     - "Reformat this product photo as a wide horizontal banner"
         image_artifact_ids: List of image artifact IDs to edit or combine.
                            For single edits: ["product.png"]
                            For combining: ["product1.png", "product2.png"]
+        aspect_ratio: Aspect ratio for the output image. Options: "1:1", "16:9", "9:16", "4:3", "3:4".
+                      Use "16:9" for horizontal banners, "9:16" for vertical stories. Defaults to "1:1".
 
     Returns:
         dict with keys:
@@ -77,6 +82,9 @@ async def edit_image(
             contents=contents,
             config=genai.types.GenerateContentConfig(
                 response_modalities=["Image"],
+                image_config=genai.types.ImageConfig(
+                    aspect_ratio=aspect_ratio,
+                ),
             ),
         )
 
