@@ -4,11 +4,15 @@ from io import BytesIO
 import logging
 
 try:
-    from rembg import remove as rembg_remove
+    from rembg import remove as rembg_remove, new_session
     from PIL import Image
+
     REMBG_AVAILABLE = True
+    # Use isnet-general-use model for better edge quality
+    _session = new_session("isnet-general-use")
 except ImportError:
     REMBG_AVAILABLE = False
+    _session = None
 
 
 async def remove_background(
@@ -51,9 +55,16 @@ async def remove_background(
         # Get image bytes from artifact
         input_bytes = artifact.inline_data.data
 
-        # Open with PIL, remove background
+        # Open with PIL, remove background with alpha matting for clean edges
         input_image = Image.open(BytesIO(input_bytes))
-        output_image = rembg_remove(input_image)
+        output_image = rembg_remove(
+            input_image,
+            session=_session,
+            alpha_matting=True,
+            alpha_matting_foreground_threshold=240,
+            alpha_matting_background_threshold=10,
+            alpha_matting_erode_size=10,
+        )
 
         # Save result to bytes
         output_buffer = BytesIO()
@@ -62,9 +73,7 @@ async def remove_background(
 
         # Save as artifact
         result_id = f"nobg_{tool_context.function_call_id}.png"
-        result_part = Part(
-            inline_data={"mime_type": "image/png", "data": output_bytes}
-        )
+        result_part = Part(inline_data={"mime_type": "image/png", "data": output_bytes})
         await tool_context.save_artifact(filename=result_id, artifact=result_part)
 
         return {

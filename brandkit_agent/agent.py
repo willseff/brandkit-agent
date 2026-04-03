@@ -9,6 +9,7 @@ from .tools import (
     remove_background,
     composite_images,
     overlay_text,
+    get_image_dimensions,
 )
 
 root_agent = LlmAgent(
@@ -22,6 +23,7 @@ root_agent = LlmAgent(
         remove_background,
         composite_images,
         overlay_text,
+        get_image_dimensions,
     ],
     before_model_callback=before_model_modifier,
 )

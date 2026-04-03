@@ -4,6 +4,7 @@ from .edit import edit_image
 from .background import remove_background
 from .composite import composite_images
 from .text_overlay import overlay_text
+from .dimensions import get_image_dimensions
 
 __all__ = [
     "generate_image",
@@ -12,4 +13,5 @@ __all__ = [
     "remove_background",
     "composite_images",
     "overlay_text",
+    "get_image_dimensions",
 ]
