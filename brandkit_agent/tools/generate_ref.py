@@ -2,7 +2,7 @@ from google import genai
 from google.adk.tools import ToolContext
 import logging
 
-from .client import client
+from .generate_best import generate_best_candidate
 
 
 async def generate_image_with_reference(
@@ -45,7 +45,7 @@ async def generate_image_with_reference(
                 "message": "No reference images provided.",
             }
 
-        # Load reference images
+        # Load reference images (shared across all candidate generations)
         ref_artifacts = []
         for ref_id in reference_artifact_ids:
             artifact = await tool_context.load_artifact(filename=ref_id)
@@ -59,25 +59,27 @@ async def generate_image_with_reference(
                 }
             ref_artifacts.append(artifact)
 
-        # Build contents: references first, then prompt
-        contents = ref_artifacts + [prompt]
-
-        response = await client.aio.models.generate_content(
-            model="gemini-2.5-flash-image",
-            contents=contents,
-            config=genai.types.GenerateContentConfig(
-                response_modalities=["Image"],
-                image_config=genai.types.ImageConfig(
-                    aspect_ratio=aspect_ratio,
-                ),
-            ),
+        config = genai.types.GenerateContentConfig(
+            response_modalities=["Image"],
+            image_config=genai.types.ImageConfig(aspect_ratio=aspect_ratio),
         )
 
-        artifact_id = ""
-        for part in response.candidates[0].content.parts:
-            if part.inline_data is not None:
-                artifact_id = f"genref_img_{tool_context.function_call_id}.png"
-                await tool_context.save_artifact(filename=artifact_id, artifact=part)
+        artifact_id = await generate_best_candidate(
+            tool_context=tool_context,
+            contents=ref_artifacts + [prompt],
+            config=config,
+            artifact_prefix="genref_img",
+            context=prompt,
+        )
+
+        if not artifact_id:
+            return {
+                "status": "error",
+                "tool_response_artifact_id": "",
+                "reference_artifact_ids": ", ".join(reference_artifact_ids),
+                "prompt": prompt,
+                "message": "All generation attempts failed",
+            }
 
         return {
             "status": "success",
@@ -91,9 +93,7 @@ async def generate_image_with_reference(
         return {
             "status": "error",
             "tool_response_artifact_id": "",
-            "reference_artifact_ids": ", ".join(reference_artifact_ids)
-            if reference_artifact_ids
-            else "",
+            "reference_artifact_ids": ", ".join(reference_artifact_ids) if reference_artifact_ids else "",
             "prompt": prompt,
             "message": f"Error generating image: {str(e)}",
         }

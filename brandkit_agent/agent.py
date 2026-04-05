@@ -2,6 +2,7 @@ from google.adk.agents import LlmAgent
 
 from .prompt import AGENT_INSTRUCTION
 from .callbacks import before_model_modifier
+from .critic import after_tool_critic
 from .tools import (
     generate_image,
     generate_image_with_reference,
@@ -26,4 +27,5 @@ root_agent = LlmAgent(
         get_image_dimensions,
     ],
     before_model_callback=before_model_modifier,
+    after_tool_callback=after_tool_critic,
 )
