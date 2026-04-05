@@ -23,6 +23,16 @@ async def before_model_modifier(
         if not content.parts:
             continue
 
+        # Skip contents already processed in a previous turn — identified by having
+        # both a function_response and inline_data in the same content. Re-processing
+        # would snowball duplicate image injections on every subsequent turn.
+        has_image_tool_response = any(
+            p.function_response and p.function_response.name in IMAGE_PRODUCING_TOOLS
+            for p in content.parts
+        )
+        if has_image_tool_response and any(p.inline_data for p in content.parts):
+            continue
+
         modified_parts = []
         for part in content.parts:
             if part.inline_data:
