@@ -3,6 +3,7 @@ from google.adk.tools import ToolContext
 import logging
 
 from .client import client
+from ..config import IMAGE_MODEL
 
 
 async def generate_image(
@@ -32,7 +33,7 @@ async def generate_image(
     """
     try:
         response = await client.aio.models.generate_content(
-            model="gemini-2.5-flash-image",
+            model=IMAGE_MODEL,
             contents=[prompt],
             config=genai.types.GenerateContentConfig(
                 response_modalities=["Image"],

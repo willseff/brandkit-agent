@@ -3,6 +3,7 @@ from google.adk.tools import ToolContext
 import logging
 
 from .client import client
+from ..config import IMAGE_MODEL
 
 
 async def edit_image(
@@ -78,7 +79,7 @@ async def edit_image(
         contents = image_artifacts + [full_prompt]
 
         response = await client.aio.models.generate_content(
-            model="gemini-2.5-flash-image",
+            model=IMAGE_MODEL,
             contents=contents,
             config=genai.types.GenerateContentConfig(
                 response_modalities=["Image"],

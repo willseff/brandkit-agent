@@ -1,5 +1,6 @@
 from google.adk.agents import LlmAgent
 
+from .config import AGENT_MODEL
 from .prompt import AGENT_INSTRUCTION
 from .callbacks import before_model_modifier
 from .tools import (
@@ -13,7 +14,7 @@ from .tools import (
 )
 
 root_agent = LlmAgent(
-    model="gemini-2.5-flash",
+    model=AGENT_MODEL,
     name="brandkit_agent",
     instruction=AGENT_INSTRUCTION,
     tools=[
