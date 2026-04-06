@@ -3,6 +3,8 @@ from google.adk.tools import ToolContext
 import logging
 
 from .generate_best import generate_best_candidate
+from .client import client
+from ..config import IMAGE_MODEL
 
 
 async def generate_image_with_reference(
@@ -93,7 +95,9 @@ async def generate_image_with_reference(
         return {
             "status": "error",
             "tool_response_artifact_id": "",
-            "reference_artifact_ids": ", ".join(reference_artifact_ids) if reference_artifact_ids else "",
+            "reference_artifact_ids": ", ".join(reference_artifact_ids)
+            if reference_artifact_ids
+            else "",
             "prompt": prompt,
             "message": f"Error generating image: {str(e)}",
         }
